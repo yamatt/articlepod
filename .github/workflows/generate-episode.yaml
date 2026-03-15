@@ -52,7 +52,7 @@ jobs:
           cp output/* "$EPISODE_DIR/"
           echo "Episode added to $EPISODE_DIR"
       - name: Add back to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: github-pages
           path: dist
