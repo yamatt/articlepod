@@ -1,0 +1,60 @@
+name: Article to Podcast
+
+on:
+  workflow_dispatch:
+    inputs:
+      article_url:
+        description: "URL of the article to convert"
+        required: true
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+      - name: Install dependencies
+        run: uv sync --no-dev
+      - name: Generate BAML
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: |
+          uv run generate-baml "${{ github.event.inputs.article_url }}"
+      - name: Run Orchestrator
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+          TTS_ENDPOINT_ID: ${{ secrets.TTS_ENDPOINT_ID }}
+        run: |
+          uv run orchestrate "${{ github.event.inputs.article_url }}"
+      - name: Upload episode to B2
+        uses: yamatt/backblaze-b2-upload-action@v7
+        with:
+          key_id: ${{ secrets.B2_KEY_ID }}
+          application_key: ${{ secrets.B2_APPLICATION_KEY }}
+          bucket_name: ${{ secrets.B2_BUCKET_NAME }}
+          file_path: output.mp3
+          remote_path: article/title.mp3
+
+      - name: Download GitHub Pages Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: github-pages
+
+      - name: Add episode to GitHub Pages
+        run: |
+          EPISODE_DIR="github-pages/episodes/$(date +%Y-%m-%d)-$(echo "${{ github.event.inputs.article_url }}" | md5sum | cut -d ' ' -f 1)"
+          mkdir -p "$EPISODE_DIR"
+          cp output/* "$EPISODE_DIR/"
+          echo "Episode added to $EPISODE_DIR"
+      - name: Add back to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: github-pages
+          path: dist
+      - name: Update GitHub Pages
+        uses: actions/deploy-pages@v4

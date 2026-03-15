@@ -1,0 +1,29 @@
+[project]
+name = "articlepod"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "baml-py>=0.220.0",
+    "click>=8.3.1",
+    "pydantic>=2.11.0",
+    "structlog>=25.5.0",
+    "typing-extensions>=4.12.0",
+]
+
+[project.scripts]
+orchestrate = "orchestrate.cli:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = { "" = "src/python" }
+
+[tool.setuptools.packages.find]
+where = ["src/python"]
+
+[dependency-groups]
+dev = ["bandit>=1.9.4", "black>=26.3.1", "isort>=8.0.1"]
