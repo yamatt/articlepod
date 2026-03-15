@@ -21,16 +21,16 @@ jobs:
       - name: Install dependencies
         run: uv sync --no-dev
       - name: Generate BAML
-        env:
-          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
         run: |
-          uv run generate-baml "${{ github.event.inputs.article_url }}"
+          uv run baml generate
       - name: Run Orchestrator
         env:
-          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
-          TTS_ENDPOINT_ID: ${{ secrets.TTS_ENDPOINT_ID }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           uv run orchestrate "${{ github.event.inputs.article_url }}"
+      - name: Convert to MP3
+        run: |
+          ffmpeg -i output.wav -codec:a libmp3lame -qscale:a 2 output.mp3
       - name: Upload episode to B2
         uses: yamatt/backblaze-b2-upload-action@v7
         with:

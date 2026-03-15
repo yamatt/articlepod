@@ -1,9 +1,11 @@
 import base64
 import importlib
 import io
+import json
 import os
 import sys
 import wave
+from datetime import datetime, timezone
 from pathlib import Path
 
 import click
@@ -21,29 +23,29 @@ from baml_client import b  # type: ignore[import-not-found]
 @click.command()
 @click.argument("article_url", type=str, required=True)
 @click.option(
-    "output_path",
+    "output_file_name",
     "-o",
-    "--output-path",
-    default="output.wav",
-    help="Path to save the output audio file.",
+    "--output-file-name",
+    default="output",
+    help="Base file name for output artifacts (audio + metadata JSON).",
 )
-def main(article_url: str, output_path: str):
+def main(article_url: str, output_file_name: str):
     log.info("START UP", article_url=article_url)
 
     # get title, published date and content from article
 
     log.info("SCRIPT GENERATION")
     try:
-        response = b.ExtractArticle(url=article_url)
+        article = b.ExtractArticle(url=article_url)
     except Exception as exc:
         raise click.ClickException(f"Failed to extract article script: {exc}") from exc
 
-    log.debug("SCRIPT GENERATED", script=response.script)
+    log.debug("SCRIPT GENERATED", word_count=len(article.script.split()))
     log.info("AUDIO GENERATION")
 
     # Generate audio bytes with Gemini SDK (BAML does not currently parse TTS inlineData).
     try:
-        audio_bytes, mime_type = _generate_audio_with_gemini_sdk(response.script)
+        audio_bytes, mime_type = _generate_audio_with_gemini_sdk(article.script)
     except Exception as exc:
         raise click.ClickException(f"Failed to generate podcast audio: {exc}") from exc
 
@@ -56,11 +58,26 @@ def main(article_url: str, output_path: str):
         final_mime_type = "audio/wav"
         log.info("AUDIO FORMAT NORMALIZED", normalized_to="audio/wav")
 
-    # write audio file to output path
-    output_file = _path_for_mime_type(Path(output_path), final_mime_type)
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_bytes(audio_bytes)
-    log.info("AUDIO SAVED", output_path=str(output_file))
+    # Write audio file and metadata JSON using the same base file name.
+    output_audio_file = _path_for_mime_type(Path(output_file_name), final_mime_type)
+    output_audio_file.parent.mkdir(parents=True, exist_ok=True)
+    output_audio_file.write_bytes(audio_bytes)
+
+    output_metadata_file = _metadata_path_for_output(output_audio_file)
+    metadata = {
+        "article_url": article_url,
+        "title": article.title,
+        "published_date": (
+            article.published_date.isoformat() if article.published_date else None
+        ),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    output_metadata_file.write_text(
+        json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
+    )
+
+    log.info("AUDIO SAVED", output_file_name=str(output_audio_file))
+    log.info("METADATA SAVED", output_file_name=str(output_metadata_file))
 
 
 def _generate_audio_with_gemini_sdk(script: str) -> tuple[bytes, str]:
@@ -144,16 +161,20 @@ def _pcm_l16_to_wav_bytes(audio_bytes: bytes, mime_type: str) -> bytes:
         return wav_io.getvalue()
 
 
-def _path_for_mime_type(output_path: Path, mime_type: str) -> Path:
+def _path_for_mime_type(output_file_name: Path, mime_type: str) -> Path:
     expected_extension = _extension_for_mime_type(mime_type)
     if not expected_extension:
-        return output_path
+        return output_file_name
 
-    current_extension = output_path.suffix.lower()
+    current_extension = output_file_name.suffix.lower()
     if current_extension == expected_extension:
-        return output_path
+        return output_file_name
 
-    return output_path.with_suffix(expected_extension)
+    return output_file_name.with_suffix(expected_extension)
+
+
+def _metadata_path_for_output(output_audio_file: Path) -> Path:
+    return output_audio_file.with_suffix(".json")
 
 
 def _extension_for_mime_type(mime_type: str) -> str:

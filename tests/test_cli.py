@@ -1,4 +1,5 @@
 import base64
+import json
 from pathlib import Path
 import sys
 from types import SimpleNamespace
@@ -87,6 +88,14 @@ def test_main_writes_audio_file(monkeypatch, tmp_path: Path) -> None:
     assert output_file.exists()
     assert output_file.read_bytes() == b"fake-mp3-data"
 
+    metadata_file = tmp_path / "podcast.json"
+    assert metadata_file.exists()
+    metadata = json.loads(metadata_file.read_text(encoding="utf-8"))
+    assert metadata["article_url"] == "https://example.com/article"
+    assert metadata["audio_file"] == str(output_file)
+    assert metadata["mime_type"] == "audio/mpeg"
+    assert metadata["bytes"] == len(b"fake-mp3-data")
+
 
 def test_main_rewrites_extension_for_wav_content(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr(
@@ -111,3 +120,15 @@ def test_main_rewrites_extension_for_wav_content(monkeypatch, tmp_path: Path) ->
     assert not requested_file.exists()
     assert expected_file.exists()
     assert expected_file.read_bytes().startswith(b"RIFF")
+
+    metadata_file = tmp_path / "podcast.json"
+    assert metadata_file.exists()
+    metadata = json.loads(metadata_file.read_text(encoding="utf-8"))
+    assert metadata["audio_file"] == str(expected_file)
+    assert metadata["mime_type"] == "audio/wav"
+
+
+def test_metadata_path_for_output() -> None:
+    assert cli._metadata_path_for_output(Path("out/audio.wav")) == Path(
+        "out/audio.json"
+    )
