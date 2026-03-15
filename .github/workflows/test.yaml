@@ -12,6 +12,17 @@ on:
       - "uv.lock"
       - ".python-version"
       - ".github/workflows/test.yaml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/python/**"
+      - "baml_src/**"
+      - "tests/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".python-version"
+      - ".github/workflows/test.yaml"
 
 jobs:
   lint:
