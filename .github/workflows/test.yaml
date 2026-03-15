@@ -34,5 +34,7 @@ jobs:
           python-version-file: ".python-version"
       - name: Install dependencies
         run: uv sync
+      - name: Genrate BAML client
+        run: uv run baml gen client
       - name: Run tests
         run: uv run pytest tests
