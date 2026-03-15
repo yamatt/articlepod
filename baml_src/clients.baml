@@ -140,15 +140,3 @@ retry_policy Exponential {
     max_delay_ms 10000
   }
 }
-
-client<llm> GeminiTTS {
-  provider google-ai
-  options {
-    model "gemini-2.5-flash-preview-tts"
-    api_key env.GOOGLE_API_KEY
-    generationConfig {
-      // responseModalities tells the model to 'speak' the output
-      responseModalities ["AUDIO"]
-    }
-  }
-}
