@@ -1,4 +1,4 @@
-name: Article to Podcast
+name: Test
 
 on:
   push:
