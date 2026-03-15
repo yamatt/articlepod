@@ -1,10 +1,10 @@
-import os
-import sys
-from pathlib import Path
 import base64
 import importlib
 import io
+import os
+import sys
 import wave
+from pathlib import Path
 
 import click
 
