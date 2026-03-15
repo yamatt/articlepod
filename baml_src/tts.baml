@@ -1,7 +1,7 @@
-function GeneratePodcastAudio(script: string, persona: string) -> string {
+function GeneratePodcastAudio(script: string) -> string {
   client GeminiTTS
   prompt #"
-    {{ persona }}:
+    A concise, clear podcast narrator:
 
     {{ script }}
   "#

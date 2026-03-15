@@ -24,14 +24,7 @@ from baml_client import b  # type: ignore[import-not-found]
     default="output.mp3",
     help="Path to save the output audio file.",
 )
-@click.option(
-    "persona",
-    "-p",
-    "--persona",
-    default="A concise, clear podcast narrator",
-    help="Persona/style prompt used by TTS generation.",
-)
-def main(article_url: str, output_path: str, persona: str):
+def main(article_url: str, output_path: str):
     log.info("START UP", article_url=article_url)
 
     # get title, published date and content from article
@@ -47,7 +40,7 @@ def main(article_url: str, output_path: str, persona: str):
 
     # send content to TTS endpoint and get audio file URL
     try:
-        audio_url = b.GeneratePodcastAudio(script=response.script, persona=persona)
+        audio_url = b.GeneratePodcastAudio(script=response.script)
     except Exception as exc:
         raise click.ClickException(f"Failed to generate podcast audio: {exc}") from exc
 
