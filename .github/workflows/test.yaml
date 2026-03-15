@@ -19,7 +19,9 @@ jobs:
       - name: Install dependencies
         run: uv sync
       - name: Run linters
-        run: uv run lint
+        run: |
+          uv run black --diff --check src/python
+          uv run isort --diff --check src/python
   test:
     runs-on: ubuntu-latest
     steps:
@@ -33,4 +35,4 @@ jobs:
       - name: Install dependencies
         run: uv sync
       - name: Run tests
-        run: uv run test
+        run: uv run pytest tests

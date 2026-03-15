@@ -1,12 +1,11 @@
-from pathlib import Path
 import shutil
 import sys
+from pathlib import Path
 from urllib.request import urlopen
 
 import click
 
 from .logger import log
-
 
 # Allow running from src/python while loading generated client at repo root.
 REPO_ROOT = Path(__file__).resolve().parents[3]
