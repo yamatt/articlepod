@@ -1,16 +1,10 @@
 import base64
 import json
 from pathlib import Path
-import sys
 from types import SimpleNamespace
 
 from click.testing import CliRunner
 import click
-
-# Keep tests runnable directly from the workspace without editable install.
-SRC_PYTHON = Path(__file__).resolve().parents[1] / "src" / "python"
-if str(SRC_PYTHON) not in sys.path:
-    sys.path.append(str(SRC_PYTHON))
 
 from orchestrate import cli
 
