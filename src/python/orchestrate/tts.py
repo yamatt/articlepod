@@ -4,6 +4,7 @@ import wave
 from google import genai
 from google.genai import types as genai_types
 
+
 class TTS:
 
     AUDIO_MIME_TYPE_EXTENSIONS = {
@@ -11,7 +12,7 @@ class TTS:
         "audio/x-wav": "wav",
         "audio/mpeg": "mp3",
         "audio/flac": "flac",
-        "audio/ogg": "ogg"
+        "audio/ogg": "ogg",
     }
 
     def __init__(self, api_key: str):
@@ -30,7 +31,6 @@ class TTS:
         if not audio_bytes:
             raise AudioException("Gemini TTS response did not include audio bytes")
         return audio_bytes, mime_type
-
 
     def _extract_audio_bytes(response: object) -> tuple[bytes, str]:
         # SDK objects vary across versions, so handle object and dict-style payloads.
@@ -63,7 +63,9 @@ class TTS:
                 if mime_type is None:
                     mime_type = getattr(inline_data, "mimeType", None)
                 if mime_type is None and isinstance(inline_data, dict):
-                    mime_type = inline_data.get("mimeType") or inline_data.get("mime_type")
+                    mime_type = inline_data.get("mimeType") or inline_data.get(
+                        "mime_type"
+                    )
 
                 if isinstance(data, bytes):
                     return data, str(mime_type or "")
@@ -71,7 +73,6 @@ class TTS:
                     return base64.b64decode(data), str(mime_type or "")
 
         return b"", ""
-
 
     def _pcm_l16_to_wav_bytes(audio_bytes: bytes, mime_type: str) -> bytes:
         sample_rate = 24000
@@ -90,4 +91,3 @@ class TTS:
                 wav_file.setframerate(sample_rate)
                 wav_file.writeframes(audio_bytes)
             return wav_io.getvalue()
-

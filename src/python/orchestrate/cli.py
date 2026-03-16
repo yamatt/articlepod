@@ -3,11 +3,11 @@ from datetime import datetime, timezone
 
 import click
 
+from baml_client import b  # type: ignore[import-not-found]
+
 from .exceptions import APIKeyException, AudioTypeException
 from .logger import log
 from .tts import TTS
-
-from baml_client import b  # type: ignore[import-not-found]
 
 
 @click.command()
@@ -38,11 +38,13 @@ def main(article_url: str, output_file_name: str):
         raise AudioTypeException(f"Unrecognised audio mime type: {mime_type}")
 
     # Write audio file and metadata JSON using the same base file name.
-    output_audio_file_path = f"./{output_file_name}.{TTS.AUDIO_MIME_TYPE_EXTENSIONS.get(mime_type, 'dat')}"
+    output_audio_file_path = (
+        f"./{output_file_name}.{TTS.AUDIO_MIME_TYPE_EXTENSIONS.get(mime_type, 'dat')}"
+    )
 
     with open(output_audio_file_path, "wb") as output_audio_file:
         output_audio_file.write_bytes(audio_bytes)
-        
+
     output_metadata_file_path = f"./{output_file_name}.json"
 
     metadata = {
@@ -54,10 +56,10 @@ def main(article_url: str, output_file_name: str):
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
     with open(output_metadata_file_path, "w") as output_metadata_file:
-        output_metadata_file.write_text(
-            json.dumps(metadata)
-        )
+        output_metadata_file.write_text(json.dumps(metadata))
 
-    log.info("OUTPUT SAVED", output_audio_file_path=output_audio_file_path, output_metadata_file_path=output_metadata_file_path)
-
-
+    log.info(
+        "OUTPUT SAVED",
+        output_audio_file_path=output_audio_file_path,
+        output_metadata_file_path=output_metadata_file_path,
+    )
