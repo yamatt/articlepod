@@ -7,6 +7,7 @@ from click.testing import CliRunner
 import click
 
 from orchestrate import cli
+from orchestrate.tts import TTS
 
 
 def test_extract_audio_bytes_from_dict_inline_data_base64() -> None:
@@ -24,7 +25,7 @@ def test_extract_audio_bytes_from_dict_inline_data_base64() -> None:
         ]
     }
 
-    audio_bytes, mime_type = cli._extract_audio_bytes(response)
+    audio_bytes, mime_type = TTS._extract_audio_bytes(response)
     assert audio_bytes == raw
     assert mime_type == "audio/mpeg"
 
@@ -37,14 +38,14 @@ def test_extract_audio_bytes_from_object_inline_data_bytes() -> None:
     content = SimpleNamespace(parts=[part])
     response = SimpleNamespace(candidates=[SimpleNamespace(content=content)])
 
-    audio_bytes, mime_type = cli._extract_audio_bytes(response)
+    audio_bytes, mime_type = TTS._extract_audio_bytes(response)
     assert audio_bytes == raw
     assert mime_type == "audio/mpeg"
 
 
 def test_pcm_l16_to_wav_bytes_has_wav_header() -> None:
     pcm = b"\x00\x00\x01\x00\xff\x7f\x00\x80"
-    wav_bytes = cli._pcm_l16_to_wav_bytes(pcm, "audio/L16;codec=pcm;rate=24000")
+    wav_bytes = TTS._pcm_l16_to_wav_bytes(pcm, "audio/L16;codec=pcm;rate=24000")
 
     assert wav_bytes.startswith(b"RIFF")
     assert b"WAVE" in wav_bytes[:16]
@@ -54,7 +55,7 @@ def test_generate_audio_with_gemini_sdk_requires_api_key(monkeypatch) -> None:
     monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
 
     try:
-        cli._generate_audio_with_gemini_sdk("script")
+        TTS._generate_audio_with_gemini_sdk("script")
         assert False, "expected ClickException"
     except click.ClickException as exc:
         assert "GOOGLE_API_KEY is not set" in str(exc)
@@ -67,7 +68,7 @@ def test_main_writes_audio_file(monkeypatch, tmp_path: Path) -> None:
         SimpleNamespace(ExtractArticle=lambda url: SimpleNamespace(script="summary")),
     )
     monkeypatch.setattr(
-        cli,
+        TTS,
         "_generate_audio_with_gemini_sdk",
         lambda script: (b"fake-mp3-data", "audio/mpeg"),
     )
@@ -98,7 +99,7 @@ def test_main_rewrites_extension_for_wav_content(monkeypatch, tmp_path: Path) ->
         SimpleNamespace(ExtractArticle=lambda url: SimpleNamespace(script="summary")),
     )
     monkeypatch.setattr(
-        cli,
+        TTS,
         "_generate_audio_with_gemini_sdk",
         lambda script: (b"\x00\x00\x01\x00", "audio/L16;codec=pcm;rate=24000"),
     )

@@ -1,8 +1,13 @@
+import base64
 import io
+import os
 import wave
 
+import click
 from google import genai
 from google.genai import types as genai_types
+
+from .exceptions import AudioException
 
 
 class TTS:
@@ -15,11 +20,13 @@ class TTS:
         "audio/ogg": "ogg",
     }
 
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-
+    @staticmethod
     def _generate_audio_with_gemini_sdk(script: str) -> tuple[bytes, str]:
-        client = genai.Client(api_key=self.api_key)
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            raise click.ClickException("GOOGLE_API_KEY is not set")
+
+        client = genai.Client(api_key=api_key)
 
         response = client.models.generate_content(
             model="gemini-2.5-flash-preview-tts",
@@ -27,11 +34,12 @@ class TTS:
             config=genai_types.GenerateContentConfig(response_modalities=["AUDIO"]),
         )
 
-        audio_bytes, mime_type = _extract_audio_bytes(response)
+        audio_bytes, mime_type = TTS._extract_audio_bytes(response)
         if not audio_bytes:
             raise AudioException("Gemini TTS response did not include audio bytes")
         return audio_bytes, mime_type
 
+    @staticmethod
     def _extract_audio_bytes(response: object) -> tuple[bytes, str]:
         # SDK objects vary across versions, so handle object and dict-style payloads.
         candidates = getattr(response, "candidates", None)
@@ -74,6 +82,7 @@ class TTS:
 
         return b"", ""
 
+    @staticmethod
     def _pcm_l16_to_wav_bytes(audio_bytes: bytes, mime_type: str) -> bytes:
         sample_rate = 24000
         parts = [part.strip() for part in mime_type.split(";")]
