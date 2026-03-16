@@ -2,7 +2,6 @@ import json
 from datetime import datetime, timezone
 
 import click
-
 from baml_client import b  # type: ignore[import-not-found]
 
 from .exceptions import APIKeyException, AudioTypeException
