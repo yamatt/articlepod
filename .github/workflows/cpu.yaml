@@ -1,0 +1,62 @@
+name: Article to Podcast
+
+on:
+  workflow_dispatch:
+    inputs:
+      article_url:
+        description: "URL of the article to convert"
+        required: true
+
+jobs:
+  podcast-cpu:
+    name: Generate Podcast (CPU) 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+      - name: Install dependencies
+        run: uv sync --no-dev
+
+      - name: Extract page contents
+        runs: |
+          uv run trafilatura -u "${{ github.event.inputs.article_url }}" > page-extract.txt
+      - name: Summarise
+        runs: |
+          uv run sumy textrank --length=12 --file page-extract.txt > summary.txt
+      - name: LLM Podcast Script
+        
+      - name: LLM Show Notes
+      - name: TTS
+
+      - name: Upload episode to B2
+        uses: yamatt/backblaze-b2-upload-action@v7
+        with:
+          key_id: ${{ secrets.B2_KEY_ID }}
+          application_key: ${{ secrets.B2_APPLICATION_KEY }}
+          bucket_name: ${{ secrets.B2_BUCKET_NAME }}
+          file_path: output.mp3
+          remote_path: article/title.mp3
+
+      - name: Download GitHub Pages Artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: github-pages
+
+      - name: Add episode to GitHub Pages
+        run: |
+          EPISODE_DIR="github-pages/episodes/$(date +%Y-%m-%d)-$(echo "${{ github.event.inputs.article_url }}" | md5sum | cut -d ' ' -f 1)"
+          mkdir -p "$EPISODE_DIR"
+          cp output/* "$EPISODE_DIR/"
+          echo "Episode added to $EPISODE_DIR"
+      - name: Add back to artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: github-pages
+          path: dist
+      - name: Update GitHub Pages
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,23 @@
+Rewrite the following extractive summary as a spoken‑word podcast script that will be read out by a text-text‑to‑speech tool.
+
+Requirements:
+- Neutral, factual tone
+- No opinions, exaggeration, or speculation
+- Plain, conversational English
+- Short sentences suitable for text‑to‑speech
+- No bullet points or headings
+- No references to “this summary” or “the text above”
+
+Structure:
+- Brief introduction explaining what the article is about
+- Clear progression through the main points
+- Short concluding paragraph with the key takeaway
+- Don't add headings
+
+Target length:
+- 4 to 6 minutes when read aloud
+
+TEXT:
+
+
+
