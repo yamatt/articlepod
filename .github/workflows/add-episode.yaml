@@ -1,0 +1,88 @@
+name: Generate Podcast Episode
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "URL of the article to turn into a podcast episode"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  models: read
+
+jobs:
+  generate-episode:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          path: main
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: episodes
+          path: episodes
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.2.0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        working-directory: main
+        with:
+          python-version-file: ".python-version"
+      - name: Install dependencies
+        working-directory: main
+        run: |
+          uv sync
+      - name: Extract article
+        working-directory: main
+        run: |
+          uv run trafilatura -u "${{ inputs.url }}" --output-format "json" > $RUNNER_TEMP/article.json
+      - name: Generate episode details
+        working-directory: main
+        run: |
+          uv run articlepod episode generate-meta $RUNNER_TEMP/article.json "${{ secrets.R2_BUCKET }}.r2.cloudflarestorage.com" > $RUNNER_TEMP/episode.json
+      - name: Get slug
+        id: slug
+        run: |
+          echo "slug=$(jq -r '.slug' $RUNNER_TEMP/episode.json)" >> "$GITHUB_OUTPUT"
+      - name: Generate podcast script
+        working-directory: main
+        run: |
+          uv run articlepod episode generate-script $RUNNER_TEMP/article.json $RUNNER_TEMP/script.txt
+      - name: Upload script
+        uses: actions/upload-artifact@v7
+        with:
+          name: script
+          path: |
+            $RUNNER_TEMP/episode.json
+            $RUNNER_TEMP/script.txt
+      - name: Generate audio
+        working-directory: main
+        run: |
+          uv run edge-tts --file $RUNNER_TEMP/script.txt --output $RUNNER_TEMP/${{ steps.slug.outputs.slug }}.mp3
+      - name: Upload to Cloudflare R2
+        working-directory: main
+        uses: cloudflare/r2-action@v1
+        with:
+          bucket: ${{ secrets.R2_BUCKET }}
+          access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          source: $RUNNER_TEMP/${{ steps.slug.outputs.slug }}.mp3
+          destination: episodes/${{ github.run_id }}.mp3
+      
+      - name: Commit episode
+        permissions:
+          contents: write
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          cp $RUNNER_TEMP/episode.json episodes/${{ steps.slug.outputs.slug }}.json
+          git add episodes/${{ steps.slug.outputs.slug }}.json
+          git commit -m "Add episode ${{ steps.slug.outputs.slug }}"
+          git push origin episodes
+        
