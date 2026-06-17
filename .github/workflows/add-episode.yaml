@@ -9,7 +9,7 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
   models: read
 
 jobs:
@@ -31,9 +31,9 @@ jobs:
         uses: astral-sh/setup-uv@v8.2.0
       - name: Set up Python
         uses: actions/setup-python@v6
-        working-directory: main
         with:
           python-version-file: ".python-version"
+          working-directory: main
       - name: Install dependencies
         working-directory: main
         run: |
@@ -66,7 +66,6 @@ jobs:
         run: |
           uv run edge-tts --file $RUNNER_TEMP/script.txt --output $RUNNER_TEMP/${{ steps.slug.outputs.slug }}.mp3
       - name: Upload to Cloudflare R2
-        working-directory: main
         uses: cloudflare/r2-action@v1
         with:
           bucket: ${{ secrets.R2_BUCKET }}
@@ -74,10 +73,8 @@ jobs:
           secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           source: $RUNNER_TEMP/${{ steps.slug.outputs.slug }}.mp3
           destination: episodes/${{ github.run_id }}.mp3
-      
+
       - name: Commit episode
-        permissions:
-          contents: write
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -85,4 +82,3 @@ jobs:
           git add episodes/${{ steps.slug.outputs.slug }}.json
           git commit -m "Add episode ${{ steps.slug.outputs.slug }}"
           git push origin episodes
-        
