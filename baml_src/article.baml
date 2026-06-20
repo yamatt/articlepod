@@ -1,5 +1,5 @@
 function GeneratePodcastScript(title: string, content: string) -> string {
-  client GitHubGPT4o-mini
+  client GitHubGPT4o_mini
   prompt #"
 Write an engaging solo-host podcast script based on the following article.
 Open with a natural conversational intro, cover the key points clearly for

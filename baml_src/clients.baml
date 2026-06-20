@@ -1,4 +1,4 @@
-client<llm> GitHubGPT4o-mini {
+client<llm> GitHubGPT4o_mini {
   provider "openai-generic"
   options {
     base_url "https://models.inference.ai.azure.com"
