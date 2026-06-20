@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from baml_client import b
+from .baml_client import b
 
 def generate_slug(title: str, now: datetime) -> str:
     """Generate a slug from the given title."""
