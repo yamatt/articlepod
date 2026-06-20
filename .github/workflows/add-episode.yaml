@@ -38,6 +38,10 @@ jobs:
         working-directory: main
         run: |
           uv sync
+      - name: Generate BAML code
+        working-directory: main
+        run: |
+          uv run baml generate --from baml_src/
       - name: Extract article
         working-directory: main
         run: |
