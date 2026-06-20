@@ -55,7 +55,7 @@ def rss():
 @click.argument("episode_dir", type=click.Path(exists=True))
 def generate_rss(episode_dir: str):
     """Generate RSS feed from episode directory."""
-    _,_, files in os.walk(episode_dir)
+    _,_, files = list(os.walk(episode_dir))
 
     click.echo(generate_rss_feed([json.load(open(f, 'r')) for f in files if f.endswith(".json")]))
 
