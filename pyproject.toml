@@ -18,17 +18,11 @@ dependencies = [
 ]
 
 [project.scripts]
-orchestrate = "orchestrate.cli:main"
+articlepod = "articlepod.__main__:main" # <--- Add this line
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-package-dir = { "" = "src/python" }
-
-[tool.setuptools.packages.find]
-where = ["src/python"]
 
 [dependency-groups]
 dev = ["bandit>=1.9.4", "black>=26.3.1", "isort>=8.0.1", "mypy>=1.19.1"]

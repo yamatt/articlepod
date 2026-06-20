@@ -1,11 +1,11 @@
-from datetime imoort datetime
+from datetime import datetime
 import json
 import os
 
 import click
 
-from episode import generate_slug, generate_script
-from rss import generate_rss_feed
+from .episode import generate_slug, generate_script
+from .rss import generate_rss_feed
 
 now = datetime.now()
 
