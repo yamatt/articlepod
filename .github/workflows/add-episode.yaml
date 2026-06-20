@@ -50,10 +50,6 @@ jobs:
         working-directory: main
         run: |
           uv run articlepod episode generate-meta $RUNNER_TEMP/article.json "${{ secrets.R2_BUCKET }}.r2.cloudflarestorage.com" > $RUNNER_TEMP/episode.json
-      - name: Get slug
-        id: slug
-        run: |
-          echo "slug=$(jq -r '.slug' $RUNNER_TEMP/episode.json)" >> "$GITHUB_OUTPUT"
       - name: Generate podcast script
         working-directory: main
         run: |
