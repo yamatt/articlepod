@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-articlepod = "articlepod.__main__:main" # <--- Add this line
+articlepod = "articlepod.__main__:cli"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]
