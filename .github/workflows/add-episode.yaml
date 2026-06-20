@@ -41,7 +41,7 @@ jobs:
       - name: Extract article
         working-directory: main
         run: |
-          uv run trafilatura -u "${{ inputs.url }}" --output-format "json" > $RUNNER_TEMP/article.json
+          uv run trafilatura -u "${{ inputs.url }}" --with-metadata --output-format "json" > $RUNNER_TEMP/article.json
       - name: Generate episode details
         working-directory: main
         run: |
