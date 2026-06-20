@@ -31,9 +31,9 @@ def generate_meta(article_json: str, bucket_uri: str):
     # Generate episode metadata
     episode_meta = {
         "title": article_data.get("title"),
-        "description": article_data.get("summary"),
+        "content": article_data.get("text"),
         "slug": slug,
-        "audio_url": f"https://{bucket_uri}/{slug}.mp3"
+        "audio_url": f"https://{bucket_uri}/{slug}.mp3",
     }
 
     click.echo(json.dumps(episode_meta))
