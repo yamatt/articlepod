@@ -15,11 +15,11 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code branch
         uses: actions/checkout@v6.0.3
         with:
           path: main
-      - name: Checkout repository
+      - name: Checkout episodes branch
         uses: actions/checkout@v6.0.3
         with:
           ref: episodes
@@ -29,7 +29,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version-file: ".python-version"
+          python-version-file: "main/.python-version"
       - name: Install dependencies
         working-directory: main
         run: |
