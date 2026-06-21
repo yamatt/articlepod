@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import os
+from urllib.parse import urljoin
 
 import click
 
@@ -31,8 +32,9 @@ def generate_meta(article_json: str, bucket_uri: str):
     # Generate episode metadata
     episode_meta = {
         "title": article_data.get("title"),
+        "added": now.strftime("%Y-%m-%dT%H:%M:%S"),
         "slug": slug,
-        "audio_url": f"https://{bucket_uri}/{slug}.mp3",
+        "audio_url": urljoin(bucket_uri, f"{slug}.mp3"),
     }
 
     click.echo(json.dumps(episode_meta, ensure_ascii=False))
@@ -54,9 +56,13 @@ def rss():
 @click.argument("episode_dir", type=click.Path(exists=True))
 def generate_rss(episode_dir: str):
     """Generate RSS feed from episode directory."""
-    _,_, files = list(os.walk(episode_dir))
+    episodes = [
+        json.load(open(os.path.join(episode_dir, f)))
+        for f in os.listdir(episode_dir)
+        if os.path.isfile(os.path.join(episode_dir, f)) and f.endswith(".json")
+    ]
 
-    click.echo(generate_rss_feed([json.load(open(f, 'r')) for f in files if f.endswith(".json")], "My Podcast", "A podcast about interesting articles.", "https://example.com", "https://example.com/rss.xml"))
+    click.echo(generate_rss_feed(episodes, "Articlepod", "A podcast about interesting articles.", "https://github.com/yamatt/articlepod", "https://yamatt.github.io/articlepod/rss.xml"))
 
 
 if __name__ == "__main__":
