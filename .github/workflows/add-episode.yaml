@@ -48,7 +48,7 @@ jobs:
       - name: Generate episode details
         working-directory: main
         run: |
-          uv run articlepod episode generate-meta $RUNNER_TEMP/article.json "${{ secrets.R2_BUCKET }}.r2.cloudflarestorage.com" > $RUNNER_TEMP/episode.json
+          uv run articlepod episode generate-meta $RUNNER_TEMP/article.json "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}.r2.cloudflarestorage.com" > $RUNNER_TEMP/episode.json
       - name: Generate slug
         id: slug
         run: |
@@ -64,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: script
-          path: $RUNNER_TEMP
+          path: ${{ runner.temp }}
       - name: Generate audio
         working-directory: main
         run: |
