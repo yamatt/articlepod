@@ -81,7 +81,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4"
           command: |
-            r2 object put --remote "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.slug.outputs.slug }}.mp3" --file $RUNNER_TEMP/articlepod-data/${{ steps.slug.outputs.slug }}.mp3
+            r2 object put --remote "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.slug.outputs.slug }}.mp3" --file ${{ runner.temp }}/articlepod-data/${{ steps.slug.outputs.slug }}.mp3
 
       - name: Commit episode
         run: |
