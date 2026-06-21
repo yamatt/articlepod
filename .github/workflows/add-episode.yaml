@@ -72,7 +72,8 @@ jobs:
         working-directory: main
         run: |
           uv run edge-tts --file $RUNNER_TEMP/articlepod-data/script.txt -v "en-GB-ThomasNeural" --write-media $RUNNER_TEMP/articlepod-data/${{ steps.slug.outputs.slug }}.mp3
-      - name: Upload compact database to R2
+          ls $RUNNER_TEMP/articlepod-data/
+      - name: Upload audio to R2
         uses: cloudflare/wrangler-action@v4.0.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
