@@ -16,3 +16,5 @@ baml_client/
 *.wav
 
 tmp/
+
+.wrangler

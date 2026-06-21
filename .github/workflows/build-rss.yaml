@@ -4,7 +4,10 @@ on:
   workflow_run:
     workflows: ["Generate Podcast Episode"]
     types: [completed]
-    branches: [episodes]
+  push:
+    branches:
+      - episodes
+  workflow_dispatch:
 
 permissions:
   contents: read
