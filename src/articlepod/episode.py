@@ -9,7 +9,7 @@ def generate_slug(title: str, now: datetime) -> str:
 
 def generate_script(article_data: dict) -> str:
     result = b.GeneratePodcastScript(
-        article_title=article_data["title"],
-        article_content=article_data["text"],
+        title=article_data["title"],
+        content=article_data["text"],
     )
     return result.script
