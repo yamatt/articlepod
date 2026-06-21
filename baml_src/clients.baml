@@ -3,6 +3,6 @@ client<llm> GitHubGPT4o_mini {
   options {
     base_url "https://models.inference.ai.azure.com"
     api_key  env.GITHUB_TOKEN
-    model    "openai/gpt-4o-mini"
+    model    "gpt-4o-mini"
   }
 }
