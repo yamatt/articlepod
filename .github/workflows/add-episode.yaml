@@ -56,6 +56,8 @@ jobs:
           echo "slug=$slug" >> $GITHUB_OUTPUT
       - name: Generate podcast script
         working-directory: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           uv run articlepod episode generate-script $RUNNER_TEMP/article.json > $RUNNER_TEMP/script.txt
       - name: Upload script
