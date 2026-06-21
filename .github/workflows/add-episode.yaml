@@ -64,13 +64,11 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: script
-          path: |
-            $RUNNER_TEMP/episode.json
-            $RUNNER_TEMP/script.txt
+          path: $RUNNER_TEMP
       - name: Generate audio
         working-directory: main
         run: |
-          uv run edge-tts --file $RUNNER_TEMP/script.txt --output $RUNNER_TEMP/${{ steps.slug.outputs.slug }}.mp3
+          uv run edge-tts --file $RUNNER_TEMP/script.txt -v "en-GB-ThomasNeural" --write-media $RUNNER_TEMP/${{ steps.slug.outputs.slug }}.mp3
       - name: Upload compact database to R2
         uses: cloudflare/wrangler-action@v4.0.0
         with:
