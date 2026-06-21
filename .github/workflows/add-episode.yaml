@@ -84,6 +84,7 @@ jobs:
             r2 object put --remote "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.slug.outputs.slug }}.mp3" --file ${{ runner.temp }}/articlepod-data/${{ steps.slug.outputs.slug }}.mp3
 
       - name: Commit episode
+        working-directory: episodes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
