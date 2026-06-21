@@ -5,9 +5,9 @@ on:
     branches:
       - main
     paths:
-      - "src/python/**"
-      - "baml_src/**"
+      - "src/**"
       - "tests/**"
+      - "baml_src/**"
       - "pyproject.toml"
       - "uv.lock"
       - ".python-version"
