@@ -44,31 +44,31 @@ jobs:
       - name: Extract article
         working-directory: main
         run: |
-          uv run trafilatura -u "${{ inputs.url }}" --with-metadata --output-format "json" > $RUNNER_TEMP/article.json
+          uv run trafilatura -u "${{ inputs.url }}" --with-metadata --output-format "json" > $RUNNER_TEMP/articlepod-data/article.json
       - name: Generate episode details
         working-directory: main
         run: |
-          uv run articlepod episode generate-meta $RUNNER_TEMP/article.json "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}.r2.cloudflarestorage.com" > $RUNNER_TEMP/episode.json
+          uv run articlepod episode generate-meta $RUNNER_TEMP/articlepod-data/article.json "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}.r2.cloudflarestorage.com" > $RUNNER_TEMP/articlepod-data/episode.json
       - name: Generate slug
         id: slug
         run: |
-          slug=$(jq -r '.slug' $RUNNER_TEMP/episode.json)
+          slug=$(jq -r '.slug' $RUNNER_TEMP/articlepod-data/episode.json)
           echo "slug=$slug" >> $GITHUB_OUTPUT
       - name: Generate podcast script
         working-directory: main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          uv run articlepod episode generate-script $RUNNER_TEMP/article.json > $RUNNER_TEMP/script.txt
+          uv run articlepod episode generate-script $RUNNER_TEMP/articlepod-data/article.json > $RUNNER_TEMP/articlepod-data/script.txt
       - name: Upload script
         uses: actions/upload-artifact@v7
         with:
           name: script
-          path: ${{ runner.temp }}
+          path: ${{ runner.temp }}/articlepod-data/
       - name: Generate audio
         working-directory: main
         run: |
-          uv run edge-tts --file $RUNNER_TEMP/script.txt -v "en-GB-ThomasNeural" --write-media $RUNNER_TEMP/${{ steps.slug.outputs.slug }}.mp3
+          uv run edge-tts --file $RUNNER_TEMP/articlepod-data/script.txt -v "en-GB-ThomasNeural" --write-media $RUNNER_TEMP/articlepod-data/${{ steps.slug.outputs.slug }}.mp3
       - name: Upload compact database to R2
         uses: cloudflare/wrangler-action@v4.0.0
         with:
@@ -76,7 +76,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4"
           command: |
-            r2 object put --remote "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.slug.outputs.slug }}.mp3" --file $RUNNER_TEMP/${{ steps.slug.outputs.slug }}.mp3
+            r2 object put --remote "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.slug.outputs.slug }}.mp3" --file $RUNNER_TEMP/articlepod-data/${{ steps.slug.outputs.slug }}.mp3
 
       - name: Commit episode
         run: |
