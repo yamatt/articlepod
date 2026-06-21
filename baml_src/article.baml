@@ -1,13 +1,4 @@
-class ArticleInput {
-  title string
-  content string
-}
-
-class PodcastScript {
-  script string
-}
-
-function GeneratePodcastScript(input: ArticleInput) -> PodcastScript {
+function GeneratePodcastScript(title: string, content: string) -> string {
   client GitHubGPT4o_mini
   prompt #"
 You are a podcast host.

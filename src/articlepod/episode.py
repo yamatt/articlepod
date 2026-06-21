@@ -9,9 +9,8 @@ def generate_slug(title: str, now: datetime) -> str:
 
 def generate_script(article_data: dict) -> str:
     result = b.GeneratePodcastScript(
-        input={
-            "title": article_data["title"],
-            "content": article_data["text"],
-    })
+        title=article_data["title"],
+        content=article_data["text"]
+    )
 
-    return result.script
+    return result
