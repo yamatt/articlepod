@@ -2,7 +2,7 @@ name: Generate Podcast
 
 on:
   workflow_run:
-    workflows: ["Generate Podcast Episode"]
+    workflows: ["Add Article"]
     types: [completed]
   push:
     branches:

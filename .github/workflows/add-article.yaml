@@ -1,4 +1,4 @@
-name: Generate Podcast Episode
+name: Add Article
 
 on:
   workflow_dispatch:
