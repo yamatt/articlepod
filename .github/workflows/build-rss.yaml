@@ -43,15 +43,18 @@ jobs:
         working-directory: main
         run: |
           uv run baml generate --from baml_src/
+
+      - name: Create public output directory
+        run: |
+          mkdir -p public
       - name: Build RSS feed
         working-directory: main
         run: |
-          mkdir public
-          uv run articlepod rss build episodes/ > public/rss.xml
+          uv run articlepod rss generate-rss ../episodes/ > ../public/rss.xml
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: main/public
+          path: public
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
