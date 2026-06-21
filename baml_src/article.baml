@@ -1,8 +1,13 @@
+class ArticleInput {
+  title string
+  content string
+}
+
 class PodcastScript {
   script string
 }
 
-function GeneratePodcastScript(title: string, content: string) -> PodcastScript {
+function GeneratePodcastScript(input: ArticleInput) -> PodcastScript {
   client GitHubGPT4o_mini
   prompt #"
 You are a podcast host.
@@ -13,9 +18,7 @@ Open with a natural conversational intro, cover the key points clearly for a gen
 
 Aim for 3-5 minutes when read aloud (450-750 words). Output ONLY the spoken script with no stage directions or annotations.
 
-Article title: {{ title }}
+{{ input }}
 
-Article content:
-{{ content }}
   "#
 }
