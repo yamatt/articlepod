@@ -39,8 +39,7 @@ jobs:
         run: uv sync
       - name: Run linters
         run: |
-          uv run black --diff --check src/python
-          uv run isort --diff --check src/python
+          uv run ruff check --output-format=github src/articlepod tests
   test:
     runs-on: ubuntu-latest
     steps:
