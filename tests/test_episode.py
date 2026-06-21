@@ -2,7 +2,7 @@ import unittest
 
 from datetime import datetime
 
-from src.articlepod.episode import generate_slug, generate_script
+from src.articlepod.episode import generate_slug
 
 class TestEpisode(unittest.TestCase):
     def test_slug_generation(self):
