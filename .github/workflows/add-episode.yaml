@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code branch
         uses: actions/checkout@v6.0.3
         with:
           path: main
 
-      - name: Checkout repository
+      - name: Checkout episodes branch
         uses: actions/checkout@v6.0.3
         with:
           ref: episodes
