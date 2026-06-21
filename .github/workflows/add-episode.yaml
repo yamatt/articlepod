@@ -52,11 +52,13 @@ jobs:
         working-directory: main
         run: |
           uv run articlepod episode generate-meta $RUNNER_TEMP/articlepod-data/article.json "${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}" > $RUNNER_TEMP/articlepod-data/episode.json
-      - name: Generate slug
-        id: slug
+      - name: Get metadata
+        id: metadata
         run: |
           slug=$(jq -r '.slug' $RUNNER_TEMP/articlepod-data/episode.json)
           echo "slug=$slug" >> $GITHUB_OUTPUT
+          title=$(jq -r '.title' $RUNNER_TEMP/articlepod-data/episode.json)
+          echo "title=$title" >> $GITHUB_OUTPUT
       - name: Generate podcast script
         working-directory: main
         env:
@@ -72,7 +74,7 @@ jobs:
       - name: Generate audio
         working-directory: main
         run: |
-          uv run edge-tts --file $RUNNER_TEMP/articlepod-data/script.txt -v "en-GB-ThomasNeural" --write-media $RUNNER_TEMP/articlepod-data/${{ steps.slug.outputs.slug }}.mp3
+          uv run edge-tts --file $RUNNER_TEMP/articlepod-data/script.txt -v "en-GB-ThomasNeural" --write-media $RUNNER_TEMP/articlepod-data/output.mp3
           ls $RUNNER_TEMP/articlepod-data/
       - name: Upload audio to R2
         uses: cloudflare/wrangler-action@v4.0.0
@@ -81,14 +83,14 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4"
           command: |
-            r2 object put --file ${{ runner.temp }}/articlepod-data/${{ steps.slug.outputs.slug }}.mp3 "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.slug.outputs.slug }}.mp3"
+            r2 object put --file ${{ runner.temp }}/articlepod-data/output.mp3 "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.metadata.outputs.slug }}.mp3"
 
       - name: Commit episode
         working-directory: episodes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          cp $RUNNER_TEMP/articlepod-data/episode.json ${{ steps.slug.outputs.slug }}.json
-          git add ${{ steps.slug.outputs.slug }}.json
-          git commit -m "Add episode ${{ steps.slug.outputs.slug }}"
+          cp $RUNNER_TEMP/articlepod-data/episode.json ${{ steps.metadata.outputs.slug }}.json
+          git add ${{ steps.metadata.outputs.slug }}.json
+          git commit -m "Add episode ${{ steps.metadata.outputs.title }}"
           git push origin episodes
