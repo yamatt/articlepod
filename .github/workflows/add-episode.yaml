@@ -41,6 +41,9 @@ jobs:
         working-directory: main
         run: |
           uv run baml generate --from baml_src/
+      - name: Create temporary directory for articlepod data
+        run: |
+          mkdir -p $RUNNER_TEMP/articlepod-data
       - name: Extract article
         working-directory: main
         run: |
