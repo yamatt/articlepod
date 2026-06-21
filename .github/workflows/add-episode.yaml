@@ -81,14 +81,14 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4"
           command: |
-            r2 object put --remote "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.slug.outputs.slug }}.mp3" --file ${{ runner.temp }}/articlepod-data/${{ steps.slug.outputs.slug }}.mp3
+            r2 object put --file ${{ runner.temp }}/articlepod-data/${{ steps.slug.outputs.slug }}.mp3 "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.slug.outputs.slug }}.mp3"
 
       - name: Commit episode
         working-directory: episodes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          cp $RUNNER_TEMP/episode.json episodes/${{ steps.slug.outputs.slug }}.json
-          git add episodes/${{ steps.slug.outputs.slug }}.json
+          cp $RUNNER_TEMP/articlepod-data/episode.json ${{ steps.slug.outputs.slug }}.json
+          git add ${{ steps.slug.outputs.slug }}.json
           git commit -m "Add episode ${{ steps.slug.outputs.slug }}"
           git push origin episodes
