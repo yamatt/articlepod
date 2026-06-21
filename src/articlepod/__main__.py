@@ -36,7 +36,7 @@ def generate_meta(article_json: str, bucket_uri: str):
         "audio_url": f"https://{bucket_uri}/{slug}.mp3",
     }
 
-    click.echo(json.dumps(episode_meta))
+    click.echo(json.dumps(episode_meta, ensure_ascii=False))
 
 @episode.command()
 @click.argument("article_json", type=click.Path(exists=True))
