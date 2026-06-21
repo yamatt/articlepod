@@ -1,4 +1,9 @@
-function GeneratePodcastScript(title: string, content: string) -> string {
+class PodcastScript {
+  title string
+  script string
+}
+
+function GeneratePodcastScript(title: string, content: string) -> PodcastScript {
   client GitHubGPT4o_mini
   prompt #"
 Write an engaging solo-host podcast script based on the following article.

@@ -12,4 +12,4 @@ def generate_script(article_data: dict) -> str:
         title=article_data["title"],
         content=article_data["text"],
     )
-    return result.value
+    return result.script
