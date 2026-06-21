@@ -61,6 +61,7 @@ jobs:
         working-directory: main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BAML_LOG: off
         run: |
           uv run articlepod episode generate-script $RUNNER_TEMP/articlepod-data/article.json > $RUNNER_TEMP/articlepod-data/script.txt
       - name: Upload script
