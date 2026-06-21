@@ -51,7 +51,7 @@ jobs:
       - name: Generate episode details
         working-directory: main
         run: |
-          uv run articlepod episode generate-meta $RUNNER_TEMP/articlepod-data/article.json "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}.r2.cloudflarestorage.com" > $RUNNER_TEMP/articlepod-data/episode.json
+          uv run articlepod episode generate-meta $RUNNER_TEMP/articlepod-data/article.json "${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}" > $RUNNER_TEMP/articlepod-data/episode.json
       - name: Generate slug
         id: slug
         run: |
