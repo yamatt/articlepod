@@ -4,7 +4,7 @@ import os
 
 import click
 
-from .episode import generate_slug, generate_script
+from .episode import generate_slug, generate_script as episode_generate_script
 from .rss import generate_rss_feed
 
 now = datetime.now()
@@ -45,7 +45,7 @@ def generate_script(article_json: str):
     with open(article_json, 'r') as f:
         article_data = json.load(f)
 
-    click.echo(generate_script(article_data))
+    click.echo(episode_generate_script(article_data))
 
 @cli.group()
 def rss():
@@ -57,7 +57,7 @@ def generate_rss(episode_dir: str):
     """Generate RSS feed from episode directory."""
     _,_, files = list(os.walk(episode_dir))
 
-    click.echo(generate_rss_feed([json.load(open(f, 'r')) for f in files if f.endswith(".json")]))
+    click.echo(generate_rss_feed([json.load(open(f, 'r')) for f in files if f.endswith(".json")], "My Podcast", "A podcast about interesting articles.", "https://example.com", "https://example.com/rss.xml"))
 
 
 if __name__ == "__main__":
