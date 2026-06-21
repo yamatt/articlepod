@@ -10,10 +10,10 @@ Open with a natural conversational intro, cover the key points clearly for a gen
 Aim for 3-5 minutes when read aloud (450-750 words). Output ONLY the spoken script with no stage directions or annotations.
 
 ---
-Article Title: {{ input.title }}
+Article Title: {{ title }}
 ---
 Article Content:
-{{ input.content }}
+{{ content }}
 
   "#
 }
