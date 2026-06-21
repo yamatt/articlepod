@@ -52,7 +52,7 @@ jobs:
       - name: Generate podcast script
         working-directory: main
         run: |
-          uv run articlepod episode generate-script $RUNNER_TEMP/article.json $RUNNER_TEMP/script.txt
+          uv run articlepod episode generate-script $RUNNER_TEMP/article.json > $RUNNER_TEMP/script.txt
       - name: Upload script
         uses: actions/upload-artifact@v7
         with:
