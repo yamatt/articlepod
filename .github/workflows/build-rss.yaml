@@ -23,11 +23,11 @@ jobs:
 
     steps:
       - name: Checkout code branch
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.0
         with:
           path: main
       - name: Checkout episodes branch
-        uses: actions/checkout@v6.0.3
+        uses: actions/checkout@v7.0.0
         with:
           ref: episodes
           path: episodes
