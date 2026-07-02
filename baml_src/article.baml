@@ -9,7 +9,9 @@ Open with a natural conversational intro, cover the key points clearly for a gen
 
 Provide just the factual content without emotional overtones, or personal stories. Do not provide follow up questions.
 
-Aim for 3-5 minutes when read aloud (450-750 words). Output ONLY the spoken script with no stage directions or annotations.
+Aim for 3-5 minutes when read aloud (450-750 words).
+
+Output ONLY the spoken script with no stage directions, annotations or formatting hints.
 
 ---
 Article Title: {{ title }}
