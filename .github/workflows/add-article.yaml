@@ -18,12 +18,12 @@ jobs:
 
     steps:
       - name: Checkout code branch
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
         with:
           path: main
 
       - name: Checkout episodes branch
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
         with:
           ref: episodes
           path: episodes
