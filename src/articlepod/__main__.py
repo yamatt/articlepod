@@ -1,22 +1,37 @@
 from datetime import datetime
+import asyncio
 import json
 import os
 from urllib.parse import urljoin
 
 import click
 
+from .page import get_page_html
 from .episode import generate_slug, generate_script as episode_generate_script
 from .rss import generate_rss_feed
 
 now = datetime.now()
 
 @click.group()
+def page():
+    pass
+
+@click.group()
 def cli():
     pass
+
+cli.add_command(page)
 
 @cli.group()
 def episode():
     pass
+
+@page.command()
+@click.argument("url", type=str)
+def get_html(url: str):
+    """Get HTML for a page from a URL."""
+    html = asyncio.run(get_page_html(url))
+    click.echo(html)
 
 @episode.command()
 @click.argument("article_json", type=click.Path(exists=True))

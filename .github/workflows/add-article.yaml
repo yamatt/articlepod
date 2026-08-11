@@ -43,13 +43,30 @@ jobs:
         working-directory: main
         run: |
           uv run baml generate --from baml_src/
+      - name: Cache Playwright Chromium
+        id: playwright-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('**/requirements.txt', '**/pyproject.toml', '**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-chromium-
+      - name: Install Chromium browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: uv run playwright install chromium
+      - name: Install Playwright system dependencies
+        run: uv run playwright install-deps chromium
       - name: Create temporary directory for articlepod data
         run: |
           mkdir -p $RUNNER_TEMP/articlepod-data
+      - name: Get HTML for page
+        working-directory: main
+        run: |
+          uv run articlepod page get-html "${{ inputs.url }}" > $RUNNER_TEMP/articlepod-data/page.html
       - name: Extract article
         working-directory: main
         run: |
-          uv run trafilatura -u "${{ inputs.url }}" --with-metadata --output-format "json" > $RUNNER_TEMP/articlepod-data/article.json
+          cat "$RUNNER_TEMP/articlepod-data/page.html" | uv run trafilatura --with-metadata --output-format "json" > $RUNNER_TEMP/articlepod-data/article.json
       - name: Generate episode details
         working-directory: main
         run: |
