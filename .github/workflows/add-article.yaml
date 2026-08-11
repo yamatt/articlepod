@@ -29,6 +29,8 @@ jobs:
           path: episodes
       - name: Install uv
         uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: "auto"
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
