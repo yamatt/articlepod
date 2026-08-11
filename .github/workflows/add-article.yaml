@@ -52,9 +52,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-playwright-chromium-
       - name: Install Chromium browser
+        working-directory: main
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: uv run playwright install chromium
       - name: Install Playwright system dependencies
+        working-directory: main
         run: uv run playwright install-deps chromium
       - name: Create temporary directory for articlepod data
         run: |
