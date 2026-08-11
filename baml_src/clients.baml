@@ -1,8 +1,7 @@
-client<llm> GitHubGPT4o_mini {
-  provider "openai-generic"
+client<llm> GeminiFlash {
+  provider "google-ai"
   options {
-    base_url "https://models.inference.ai.azure.com"
-    api_key  env.GITHUB_TOKEN
-    model    "gpt-4o-mini"
+    api_key  env.GEMINI_API_KEY
+    model    "gemini-2.0-flash"
   }
 }

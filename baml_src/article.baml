@@ -1,5 +1,5 @@
 function GeneratePodcastScript(title: string, content: string) -> string {
-  client GitHubGPT4o_mini
+  client GeminiFlash
   prompt #"
 You are a podcast host.
 
