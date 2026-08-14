@@ -18,3 +18,5 @@ baml_client/
 tmp/
 
 .wrangler
+
+output.*
