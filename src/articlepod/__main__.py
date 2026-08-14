@@ -41,10 +41,10 @@ def get_html(url: str):
     html = asyncio.run(get_page_html(url))
     click.echo(html)
 
-@article.command()
+@article.command(name="generate-meta")
 @click.argument("article_json", type=click.Path(exists=True))
 @click.argument("bucket_uri", type=str)
-def generate_meta(article_json: str, bucket_uri: str):
+def generate_article_meta(article_json: str, bucket_uri: str):
     """Generate episode metadata from an article JSON file."""
     # Load the article JSON
     with open(article_json, 'r') as f:
@@ -73,10 +73,10 @@ def generate_script(article_json: str):
 
     click.echo(episode_generate_script(article_data))
 
-@video.command()
+@video.command(name="generate-meta")
 @click.argument("video_json", type=click.Path(exists=True))
 @click.argument("bucket_uri", type=str)
-def generate_meta(video_json: str, bucket_uri: str):
+def generate_video_meta(video_json: str, bucket_uri: str):
     """Generate episode metadata from a video JSON file."""
     # Load the video JSON
     with open(video_json, 'r') as f:
