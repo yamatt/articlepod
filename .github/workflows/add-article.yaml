@@ -69,10 +69,10 @@ jobs:
         working-directory: main
         run: |
           cat "$RUNNER_TEMP/articlepod-data/page.html" | uv run trafilatura --with-metadata --output-format "json" > $RUNNER_TEMP/articlepod-data/article.json
-      - name: Generate episode details
+      - name: Generate article details
         working-directory: main
         run: |
-          uv run articlepod episode generate-meta $RUNNER_TEMP/articlepod-data/article.json "${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}" > $RUNNER_TEMP/articlepod-data/episode.json
+          uv run articlepod article generate-meta $RUNNER_TEMP/articlepod-data/article.json "${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}" > $RUNNER_TEMP/articlepod-data/episode.json
       - name: Get metadata
         id: metadata
         run: |
@@ -87,7 +87,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BAML_LOG: off
         run: |
-          uv run articlepod episode generate-script $RUNNER_TEMP/articlepod-data/article.json > $RUNNER_TEMP/articlepod-data/script.txt
+          uv run articlepod article generate-script $RUNNER_TEMP/articlepod-data/article.json > $RUNNER_TEMP/articlepod-data/script.txt
       - name: Upload script
         uses: actions/upload-artifact@v7
         with:

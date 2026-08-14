@@ -7,10 +7,12 @@ from urllib.parse import urljoin
 import click
 
 from .page import get_page_html
-from .episode import generate_slug, generate_script as episode_generate_script
+from .article import generate_slug, generate_script as episode_generate_script
 from .rss import generate_rss_feed
 
-now = datetime.now()
+def generate_now():
+    """Return the current datetime."""
+    return datetime.now()
 
 @click.group()
 def page():
@@ -22,8 +24,14 @@ def cli():
 
 cli.add_command(page)
 
+@click.group()
+def video():
+    pass
+
+cli.add_command(video)
+
 @cli.group()
-def episode():
+def article():
     pass
 
 @page.command()
@@ -33,7 +41,7 @@ def get_html(url: str):
     html = asyncio.run(get_page_html(url))
     click.echo(html)
 
-@episode.command()
+@article.command()
 @click.argument("article_json", type=click.Path(exists=True))
 @click.argument("bucket_uri", type=str)
 def generate_meta(article_json: str, bucket_uri: str):
@@ -41,6 +49,8 @@ def generate_meta(article_json: str, bucket_uri: str):
     # Load the article JSON
     with open(article_json, 'r') as f:
         article_data = json.load(f)
+
+    now = generate_now()
 
     slug = generate_slug(article_data.get("title"), now)
 
@@ -54,7 +64,7 @@ def generate_meta(article_json: str, bucket_uri: str):
 
     click.echo(json.dumps(episode_meta, ensure_ascii=False))
 
-@episode.command()
+@article.command()
 @click.argument("article_json", type=click.Path(exists=True))
 def generate_script(article_json: str):
     """Generate episode script from an article JSON file."""
@@ -62,6 +72,29 @@ def generate_script(article_json: str):
         article_data = json.load(f)
 
     click.echo(episode_generate_script(article_data))
+
+@video.command()
+@click.argument("video_json", type=click.Path(exists=True))
+@click.argument("bucket_uri", type=str)
+def generate_meta(video_json: str, bucket_uri: str):
+    """Generate episode metadata from a video JSON file."""
+    # Load the video JSON
+    with open(video_json, 'r') as f:
+        video_data = json.load(f)
+
+    now = generate_now()
+
+    slug = generate_slug(video_data.get("title"), now)
+
+    # Generate episode metadata
+    episode_meta = {
+        "title": video_data.get("fulltitle"),
+        "added": now.strftime("%Y-%m-%dT%H:%M:%S"),
+        "slug": slug,
+        "audio_url": urljoin(bucket_uri, f"{slug}.mp3"),
+    }
+
+    click.echo(json.dumps(episode_meta, ensure_ascii=False))
 
 @cli.group()
 def rss():

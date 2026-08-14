@@ -1,0 +1,79 @@
+name: Add Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "URL of the video to turn into a podcast episode"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  models: read
+
+jobs:
+  generate-episode:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code branch
+        uses: actions/checkout@v7.0.1
+        with:
+          path: main
+
+      - name: Checkout episodes branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: episodes
+          path: episodes
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          enable-cache: "auto"
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version-file: "main/.python-version"
+      - name: Install dependencies
+        working-directory: main
+        run: |
+          uv sync
+      - name: Create temporary directory for articlepod data
+        id: output-dir
+        run: |
+          mkdir -p $RUNNER_TEMP/articlepod-data
+          echo "output_dir=$RUNNER_TEMP/articlepod-data" >> $GITHUB_OUTPUTS
+      - name: Download audio from video
+        working-directory: main
+        run: |
+          uv run yt-dlp -x --audio-format mp3 --write-info-json "${{ inputs.url }}" -o "${{ steps.output-dir.outputs.output_dir }}/output"
+      - name: Generate article details
+        working-directory: main
+        run: |
+          uv run articlepod video generate-meta "${{ steps.output-dir.outputs.output_dir }}/output.info.json" "${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}" > "${{ steps.output-dir.outputs.output_dir }}/episode.json"
+      - name: Get metadata
+        id: metadata
+        run: |
+          slug=$(jq -r '.webpage_url' ${{ steps.output-dir.outputs.output_dir }}/output.info.json)
+          echo "slug=$slug" >> $GITHUB_OUTPUT
+          title=$(jq -r '.fulltitle' ${{ steps.output-dir.outputs.output_dir }}/output.info.json)
+          echo "title=$title" >> $GITHUB_OUTPUT
+      - name: Upload audio to R2
+        uses: cloudflare/wrangler-action@v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4"
+          command: |
+            r2 object put --file "${{ steps.output-dir.outputs.output_dir }}/output.mp3" --remote "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.metadata.outputs.slug }}.mp3"
+
+      - name: Commit episode
+        working-directory: episodes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          cp $RUNNER_TEMP/articlepod-data/episode.json ${{ steps.metadata.outputs.slug }}.json
+          git add ${{ steps.metadata.outputs.slug }}.json
+          git commit -m "Add episode ${{ steps.metadata.outputs.title }}"
+          git push origin episodes
