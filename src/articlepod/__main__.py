@@ -92,6 +92,7 @@ def generate_meta(video_json: str, bucket_uri: str):
         "added": now.strftime("%Y-%m-%dT%H:%M:%S"),
         "slug": slug,
         "audio_url": urljoin(bucket_uri, f"{slug}.mp3"),
+        "thumbnail": video_data.get("thumbnail"),
     }
 
     click.echo(json.dumps(episode_meta, ensure_ascii=False))

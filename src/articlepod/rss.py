@@ -65,6 +65,10 @@ def generate_rss_feed(
             "%a, %d %b %Y %H:%M:%S +0000"
         )
 
+        if episode.get("thumbnail"):
+            it_image = ET.SubElement(item, "{http://www.itunes.com/dtds/podcast-1.0.dtd}image")
+            it_image.set("href", episode["thumbnail"])
+
     return ET.tostring(
         rss, encoding="utf-8", xml_declaration=True
     ).decode("utf-8")
