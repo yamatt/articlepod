@@ -39,11 +39,23 @@ jobs:
         working-directory: main
         run: |
           uv sync
+      - name: Create temporary directory for articlepod data
+        id: output-dir
+        run: |
+          mkdir -p $RUNNER_TEMP/articlepod-data
+          echo "output_dir=$RUNNER_TEMP/articlepod-data" >> $GITHUB_OUTPUT
       - name: Generate BAML code
         working-directory: main
         run: |
           uv run baml generate --from baml_src/
+      - name: Attempt Trafilatura Download
+        id: trafilatura-download
+        working-directory: main
+        continue-on-error: true
+        run: |
+          uv run trafilatura -u "${{ inputs.url }}" --with-metadata --output-format "json" > ${{ steps.output-dir.outputs.output_dir }}/article.json
       - name: Cache Playwright Chromium
+        if: steps.trafilatura-download.outcome == 'failure'
         id: playwright-cache
         uses: actions/cache@v6
         with:
@@ -53,32 +65,32 @@ jobs:
             ${{ runner.os }}-playwright-chromium-
       - name: Install Chromium browser
         working-directory: main
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        if: steps.trafilatura-download.outcome == 'failure' && steps.playwright-cache.outputs.cache-hit != 'true'
         run: uv run playwright install chromium
       - name: Install Playwright system dependencies
+        if: steps.trafilatura-download.outcome == 'failure'
         working-directory: main
         run: uv run playwright install-deps chromium
-      - name: Create temporary directory for articlepod data
-        run: |
-          mkdir -p $RUNNER_TEMP/articlepod-data
       - name: Get HTML for page
+        if: steps.trafilatura-download.outcome == 'failure'
         working-directory: main
         run: |
-          uv run articlepod page get-html "${{ inputs.url }}" > $RUNNER_TEMP/articlepod-data/page.html
+          uv run articlepod page get-html "${{ inputs.url }}" > ${{ steps.output-dir.outputs.output_dir }}/page.html
       - name: Extract article
+        if: steps.trafilatura-download.outcome == 'failure'
         working-directory: main
         run: |
-          cat "$RUNNER_TEMP/articlepod-data/page.html" | uv run trafilatura --with-metadata --output-format "json" > $RUNNER_TEMP/articlepod-data/article.json
+          cat "${{ steps.output-dir.outputs.output_dir }}/page.html" | uv run trafilatura --with-metadata --output-format "json" > ${{ steps.output-dir.outputs.output_dir }}/article.json
       - name: Generate article details
         working-directory: main
         run: |
-          uv run articlepod article generate-meta $RUNNER_TEMP/articlepod-data/article.json "${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}" > $RUNNER_TEMP/articlepod-data/episode.json
+          uv run articlepod article generate-meta ${{ steps.output-dir.outputs.output_dir }}/article.json "${{ secrets.CLOUDFLARE_R2_PUBLIC_URL }}" > ${{ steps.output-dir.outputs.output_dir }}/episode.json
       - name: Get metadata
         id: metadata
         run: |
-          slug=$(jq -r '.slug' $RUNNER_TEMP/articlepod-data/episode.json)
+          slug=$(jq -r '.slug' ${{ steps.output-dir.outputs.output_dir }}/episode.json)
           echo "slug=$slug" >> $GITHUB_OUTPUT
-          title=$(jq -r '.title' $RUNNER_TEMP/articlepod-data/episode.json)
+          title=$(jq -r '.title' ${{ steps.output-dir.outputs.output_dir }}/episode.json)
           echo "title=$title" >> $GITHUB_OUTPUT
       - name: Generate podcast script
         working-directory: main
@@ -87,17 +99,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BAML_LOG: off
         run: |
-          uv run articlepod article generate-script $RUNNER_TEMP/articlepod-data/article.json > $RUNNER_TEMP/articlepod-data/script.txt
+          uv run articlepod article generate-script ${{ steps.output-dir.outputs.output_dir }}/article.json > ${{ steps.output-dir.outputs.output_dir }}/script.txt
       - name: Upload script
         uses: actions/upload-artifact@v7
         with:
           name: script
-          path: ${{ runner.temp }}/articlepod-data/
+          path: ${{ steps.output-dir.outputs.output_dir }}/
       - name: Generate audio
         working-directory: main
         run: |
-          uv run edge-tts --file $RUNNER_TEMP/articlepod-data/script.txt -v "en-GB-ThomasNeural" --write-media $RUNNER_TEMP/articlepod-data/output.mp3
-          ls $RUNNER_TEMP/articlepod-data/
+          uv run edge-tts --file ${{ steps.output-dir.outputs.output_dir }}/script.txt -v "en-GB-ThomasNeural" --write-media ${{ steps.output-dir.outputs.output_dir }}/output.mp3
+          ls ${{ steps.output-dir.outputs.output_dir }}/
       - name: Upload audio to R2
         uses: cloudflare/wrangler-action@v4.0.0
         with:
@@ -105,14 +117,14 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4"
           command: |
-            r2 object put --file ${{ runner.temp }}/articlepod-data/output.mp3 --remote "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.metadata.outputs.slug }}.mp3"
+            r2 object put --file ${{ steps.output-dir.outputs.output_dir }}/output.mp3 --remote "${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}/${{ steps.metadata.outputs.slug }}.mp3"
 
       - name: Commit episode
         working-directory: episodes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          cp $RUNNER_TEMP/articlepod-data/episode.json ${{ steps.metadata.outputs.slug }}.json
+          cp ${{ steps.output-dir.outputs.output_dir }}/episode.json ${{ steps.metadata.outputs.slug }}.json
           git add ${{ steps.metadata.outputs.slug }}.json
           git commit -m "Add episode ${{ steps.metadata.outputs.title }}"
           git push origin episodes
