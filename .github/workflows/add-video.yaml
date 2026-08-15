@@ -43,7 +43,7 @@ jobs:
         id: output-dir
         run: |
           mkdir -p $RUNNER_TEMP/articlepod-data
-          echo "output_dir=$RUNNER_TEMP/articlepod-data" >> $GITHUB_OUTPUTS
+          echo "output_dir=$RUNNER_TEMP/articlepod-data" >> $GITHUB_OUTPUT
       - name: Download audio from video
         working-directory: main
         run: |
