@@ -158,7 +158,7 @@ def generate_rss(episode_dir: str, host_url: str, episodes: int = 10):
         :episodes
     ]  # Get the specified number of most recent episodes
 
-    description = f"A podcast about interesting articles."
+    description = "A podcast about interesting articles."
 
     click.echo(
         generate_rss_feed(
