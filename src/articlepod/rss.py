@@ -53,22 +53,20 @@ def generate_rss_feed(
             "enclosure",
             {
                 "url": episode["audio_url"],
-                "type": episode.get(
-                    "mime_type", "audio/mpeg"
-                ),
+                "type": episode.get("mime_type", "audio/mpeg"),
             },
         )
 
         # Handle Publication Date (Expects RFC 2822 format string)
-            # %z handles timezone, %a %d %b %Y %H:%M:%S is standard RFC 2822
-        ET.SubElement(item, "pubDate").text = datetime.fromisoformat(episode["added"]).strftime(
-            "%a, %d %b %Y %H:%M:%S +0000"
-        )
+        # %z handles timezone, %a %d %b %Y %H:%M:%S is standard RFC 2822
+        ET.SubElement(item, "pubDate").text = datetime.fromisoformat(
+            episode["added"]
+        ).strftime("%a, %d %b %Y %H:%M:%S +0000")
 
         if episode.get("thumbnail"):
-            it_image = ET.SubElement(item, "{http://www.itunes.com/dtds/podcast-1.0.dtd}image")
+            it_image = ET.SubElement(
+                item, "{http://www.itunes.com/dtds/podcast-1.0.dtd}image"
+            )
             it_image.set("href", episode["thumbnail"])
 
-    return ET.tostring(
-        rss, encoding="utf-8", xml_declaration=True
-    ).decode("utf-8")
+    return ET.tostring(rss, encoding="utf-8", xml_declaration=True).decode("utf-8")

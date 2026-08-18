@@ -4,6 +4,7 @@ from datetime import datetime
 
 from articlepod.article import generate_slug
 
+
 class TestEpisode(unittest.TestCase):
     def test_slug_generation(self):
         # Example test for slug generation
