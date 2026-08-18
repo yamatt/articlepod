@@ -103,13 +103,14 @@ def rss():
 
 @rss.command()
 @click.argument("episode_dir", type=click.Path(exists=True))
-def generate_rss(episode_dir: str):
+@click.option("--episodes", default=10, type=int, help="Number of episodes to include in the RSS feed.")
+def generate_rss(episode_dir: str, episodes: int = 10):
     """Generate RSS feed from episode directory."""
     episodes = sorted([
         json.load(open(os.path.join(episode_dir, f)))
         for f in os.listdir(episode_dir)
         if os.path.isfile(os.path.join(episode_dir, f)) and f.endswith(".json")
-    ], key=lambda x: x["added"], reverse=True)[:10]  # Get the 10 most recent episodes
+    ], key=lambda x: x["added"], reverse=True)[:episodes]  # Get the specified number of most recent episodes
 
     click.echo(generate_rss_feed(episodes, "Articlepod", "A podcast about interesting articles.", "https://github.com/yamatt/articlepod", "https://yamatt.github.io/articlepod/rss.xml"))
 
