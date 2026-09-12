@@ -1,5 +1,5 @@
-from datetime import datetime
 import xml.etree.ElementTree as ET  # nosec
+from datetime import UTC, datetime
 
 ET.register_namespace("atom", "http://www.w3.org/2005/Atom")
 ET.register_namespace("itunes", "http://www.itunes.com/dtds/podcast-1.0.dtd")
@@ -59,9 +59,12 @@ def generate_rss_feed(
 
         # Handle Publication Date (Expects RFC 2822 format string)
         # %z handles timezone, %a %d %b %Y %H:%M:%S is standard RFC 2822
-        ET.SubElement(item, "pubDate").text = datetime.fromisoformat(
-            episode["added"]
-        ).strftime("%a, %d %b %Y %H:%M:%S +0000")
+        added = datetime.fromisoformat(episode["added"])
+        if added.tzinfo is None:
+            added = added.replace(tzinfo=UTC)
+        ET.SubElement(item, "pubDate").text = added.strftime(
+            "%a, %d %b %Y %H:%M:%S +0000"
+        )
 
         if episode.get("thumbnail"):
             it_image = ET.SubElement(

@@ -1,19 +1,20 @@
-from datetime import datetime
 import asyncio
 import json
 import os
+from datetime import UTC, datetime
 from urllib.parse import urljoin
 
 import click
 
+from .article import generate_script as episode_generate_script
+from .article import generate_slug
 from .page import get_page_html
-from .article import generate_slug, generate_script as episode_generate_script
 from .rss import generate_rss_feed
 
 
 def generate_now():
-    """Return the current datetime."""
-    return datetime.now()
+    """Return the current UTC datetime."""
+    return datetime.now(UTC)
 
 
 @click.group()
@@ -73,7 +74,7 @@ def generate_article_meta(article_json: str, bucket_uri: str):
     episode_meta = {
         "title": article_data.get("title"),
         "source_url": article_data.get("source"),
-        "added": now.strftime("%Y-%m-%dT%H:%M:%S"),
+        "added": now.isoformat(timespec="seconds"),
         "slug": slug,
         "audio_url": urljoin(bucket_uri, f"{slug}.mp3"),
         "description": description,
@@ -115,7 +116,7 @@ def generate_video_meta(video_json: str, bucket_uri: str):
     episode_meta = {
         "title": video_data.get("fulltitle"),
         "source_url": video_data.get("source"),
-        "added": now.strftime("%Y-%m-%dT%H:%M:%S"),
+        "added": now.isoformat(timespec="seconds"),
         "slug": slug,
         "audio_url": urljoin(bucket_uri, f"{slug}.mp3"),
         "thumbnail": video_data.get("thumbnail"),
@@ -146,17 +147,22 @@ def rss():
 )
 def generate_rss(episode_dir: str, host_url: str, episodes: int = 10):
     """Generate RSS feed from episode directory."""
+    episode_files = [
+        os.path.join(episode_dir, f)
+        for f in os.listdir(episode_dir)
+        if os.path.isfile(os.path.join(episode_dir, f)) and f.endswith(".json")
+    ]
+
+    loaded_episodes = []
+    for path in episode_files:
+        with open(path, "r", encoding="utf-8") as f:
+            loaded_episodes.append(json.load(f))
+
     episodes = sorted(
-        [
-            json.load(open(os.path.join(episode_dir, f)))
-            for f in os.listdir(episode_dir)
-            if os.path.isfile(os.path.join(episode_dir, f)) and f.endswith(".json")
-        ],
+        loaded_episodes,
         key=lambda x: x["added"],
         reverse=True,
-    )[
-        :episodes
-    ]  # Get the specified number of most recent episodes
+    )[:episodes]
 
     description = "A podcast about interesting articles."
 

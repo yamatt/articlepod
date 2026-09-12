@@ -1,5 +1,9 @@
 import asyncio
+
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import async_playwright
+
+from .logger import log
 
 
 async def get_page_html(url: str, timeout: int = 30_000, headless: bool = True):
@@ -22,10 +26,14 @@ async def get_page_html(url: str, timeout: int = 30_000, headless: bool = True):
             # Navigate and wait for network to be mostly idle
             await page.goto(url, wait_until="load", timeout=timeout)
             try:
-                await page.wait_for_load_state("networkidle", timeout=timeout)
-            except Exception:
+                await page.wait_for_load_state("domcontentloaded", timeout=timeout)
+            except PlaywrightTimeoutError:
                 # networkidle can be flaky; continue if it times out
-                pass
+                log.warning(
+                    "NETWORK IDLE TIMEOUT",
+                    message="Network idle timeout. This can be unreliable, continuing anyway as it may still have enough content.",
+                    url=url,
+                )
 
             html_content = await page.content()
             return html_content
