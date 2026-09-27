@@ -110,7 +110,7 @@ jobs:
           uv run edge-tts --file ${{ steps.output-dir.outputs.output_dir }}/script.txt -v "en-GB-ThomasNeural" --write-media ${{ steps.output-dir.outputs.output_dir }}/output.mp3
           ls ${{ steps.output-dir.outputs.output_dir }}/
       - name: Upload audio to R2
-        uses: cloudflare/wrangler-action@v4.0.0
+        uses: cloudflare/wrangler-action@v4.1.1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
