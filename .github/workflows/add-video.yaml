@@ -59,7 +59,7 @@ jobs:
           title=$(jq -r '.fulltitle' ${{ steps.output-dir.outputs.output_dir }}/output.info.json)
           echo "title=$title" >> $GITHUB_OUTPUT
       - name: Upload audio to R2
-        uses: cloudflare/wrangler-action@v4.1.1
+        uses: cloudflare/wrangler-action@v4.1.3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
