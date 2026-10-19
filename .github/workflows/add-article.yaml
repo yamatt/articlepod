@@ -107,8 +107,8 @@ jobs:
       - name: Make models directory
         id: models-dir
         run:
-          mkdir ${{ steps.output-dir.outputs.output_dir }}/models
-          echo "output_dir=$RUNNER_TEMP/models" >> $GITHUB_OUTPUT
+          mkdir -p ${{ steps.output-dir.outputs.output_dir }}/models
+          echo "output_dir=${{ steps.output-dir.outputs.output_dir }}/models" >> $GITHUB_OUTPUT
       - name: Cache piper model
         uses: actions/cache@v6
         with:
