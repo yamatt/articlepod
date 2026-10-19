@@ -7,6 +7,14 @@ on:
         description: "URL of the article to turn into a podcast episode"
         required: true
         type: string
+      voice-model:
+        description: "Name of the model to use"
+        default: "en_GB-alan-medium"
+        required: true
+        type: choice
+        options:
+          - "en_GB-alan-medium"
+          - "en_GB-cori-high"
 
 permissions:
   contents: write
@@ -91,14 +99,6 @@ jobs:
           echo "slug=$slug" >> $GITHUB_OUTPUT
           title=$(jq -r '.title' ${{ steps.output-dir.outputs.output_dir }}/episode.json)
           echo "title=$title" >> $GITHUB_OUTPUT
-      - name: Cache Ollama Models
-        id: ollama-cache
-        uses: actions/cache@v6
-        with:
-          path: ~/.ollama/models
-          key: ${{ runner.os }}-ollama-${{ hashFiles('**/Modelfile') }}
-          restore-keys: |
-            ${{ runner.os }}-ollama-
       - name: Cache Ollama Binary
         id: ollama-binary-cache
         uses: actions/cache@v6
@@ -127,6 +127,14 @@ jobs:
             sleep 1
           done
           echo "Available."
+      - name: Cache Ollama Models
+        id: ollama-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.ollama/models
+          key: ${{ runner.os }}-ollama-models-llama3.2:3b
+          restore-keys: |
+            ${{ runner.os }}-ollama-models-
       - name: Pull Ollama Model
         run: |
           ollama pull llama3.2:3b
@@ -148,25 +156,28 @@ jobs:
       - name: Make models directory
         id: models-dir
         run: |
-          mkdir -p ${{ steps.output-dir.outputs.output_dir }}/models
-          echo "output_dir=${{ steps.output-dir.outputs.output_dir }}/models" >> $GITHUB_OUTPUT
-      - name: Cache piper model
+          mkdir -p ${{ steps.output-dir.outputs.output_dir }}/voice-models
+          echo "output_dir=${{ steps.output-dir.outputs.output_dir }}/voice-models" >> $GITHUB_OUTPUT
+      - name: Cache piper voice models
         uses: actions/cache@v6
         with:
-          path: ${{ steps.models-dir.outputs.output_dir }}
-          key: piper-models
+          path: ${{ steps.models-dir.outputs.output_dir }}/${{ inputs.voice-model }}
+          key: piper-voice-model-${{ inputs.voice-model }}
+          restore-keys: |
+            piper-voice-model-
       - name: Download voice model
         run: |
-          uvx --from piper-tts python -m piper.download_voices --data-dir ${{ steps.models-dir.outputs.output_dir }} en_GB-cori-high
+          mkdir ${{ steps.models-dir.outputs.output_dir }}/"${{ inputs.voice-model }}"
+          uvx --from piper-tts python -m piper.download_voices --data-dir ${{ steps.models-dir.outputs.output_dir }}/${{ inputs.voice-model }} ${{ inputs.voice-model }
       - name: Generate local audio
         working-directory: main
         run: |
-          uv run piper --input-file ${{ steps.output-dir.outputs.output_dir }}/script.txt --model ${{ steps.models-dir.outputs.output_dir }}/en_GB-cori-high --output-file ${{ steps.output-dir.outputs.output_dir }}/output.wav
+          uv run piper --input-file ${{ steps.output-dir.outputs.output_dir }}/script.txt --model ${{ steps.models-dir.outputs.output_dir }}/${{ inputs.voice-model }}/${{ inputs.voice-model }} --output-file ${{ steps.output-dir.outputs.output_dir }}/output.wav
       - name: Install ffmpeg
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-      - name: Wav to mp3
+      - name: Wav to MP3
         run: |
           ffmpeg -i ${{ steps.output-dir.outputs.output_dir }}/output.wav -b:a 128k ${{ steps.output-dir.outputs.output_dir }}/output.mp3
       - name: Upload audio to R2
