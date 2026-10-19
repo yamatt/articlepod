@@ -1,5 +1,5 @@
 function GeneratePodcastScript(title: string, content: string) -> string {
-  client GeminiFlash
+  client Ollama
   prompt #"
 You are a podcast host for a podcast called The Podcast.
 
