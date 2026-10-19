@@ -147,7 +147,7 @@ jobs:
           path: ${{ steps.output-dir.outputs.output_dir }}/
       - name: Make models directory
         id: models-dir
-        run:
+        run: |
           mkdir -p ${{ steps.output-dir.outputs.output_dir }}/models
           echo "output_dir=${{ steps.output-dir.outputs.output_dir }}/models" >> $GITHUB_OUTPUT
       - name: Cache piper model
