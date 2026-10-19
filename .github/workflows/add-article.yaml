@@ -115,7 +115,7 @@ jobs:
           path: ${{ steps.models-dir.outputs.output_dir }}
           key: piper-models
       - name: Download voice model
-        runs: |
+        run: |
           uvx --from piper-tts python -m piper.download_voices --data-dir ${{ steps.models-dir.outputs.output_dir }} en_GB-cori-high
       - name: Generate local audio
         working-directory: main
