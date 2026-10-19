@@ -91,6 +91,45 @@ jobs:
           echo "slug=$slug" >> $GITHUB_OUTPUT
           title=$(jq -r '.title' ${{ steps.output-dir.outputs.output_dir }}/episode.json)
           echo "title=$title" >> $GITHUB_OUTPUT
+      - name: Cache Ollama Models
+        id: ollama-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.ollama/models
+          key: ${{ runner.os }}-ollama-${{ hashFiles('**/Modelfile') }}
+          restore-keys: |
+            ${{ runner.os }}-ollama-
+      - name: Cache Ollama Binary
+        id: ollama-binary-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.local/ollama
+          key: ${{ runner.os }}-ollama-binary-v1
+          restore-keys: |
+            ${{ runner.os }}-ollama-binary-
+      - name: Install Ollama Locally
+        run: |
+          mkdir -p ~/.local/ollama
+          if [ ! -x "$HOME/.local/ollama/bin/ollama" ]; then
+            curl -fsSL https://ollama.com/download/ollama-linux-amd64.tar.zst | tar --zstd -xvf - -C ~/.local/ollama
+          fi
+          echo "$HOME/.local/ollama/bin" >> $GITHUB_PATH
+      - name: Setup Ollama in background with cached model
+        background: true
+        id: ollama-serve
+        run: |
+          ollama serve
+      - name: Check ollama is Available
+        timeout-minutes: 1
+        run: |
+          until curl -s http://localhost:11434/api/tags > /dev/null; do
+            echo "Checked."
+            sleep 1
+          done
+          echo "Available."
+      - name: Pull Ollama Model
+        run: |
+          ollama pull llama3.2:3b
       - name: Generate podcast script
         working-directory: main
         env:
@@ -99,6 +138,8 @@ jobs:
           BAML_LOG: off
         run: |
           uv run articlepod article generate-script ${{ steps.output-dir.outputs.output_dir }}/article.json > ${{ steps.output-dir.outputs.output_dir }}/script.txt
+      - name: Stop Ollama
+        cancel: ollama-serve
       - name: Upload script
         uses: actions/upload-artifact@v7
         with:
