@@ -177,9 +177,13 @@ jobs:
         run: |
           uv run piper --input-file ${{ steps.output-dir.outputs.output_dir }}/script.txt --model ${{ steps.models-dir.outputs.output_dir }}/${{ inputs.voice-model }}/${{ inputs.voice-model }} --output-file ${{ steps.output-dir.outputs.output_dir }}/output.wav
       - name: Install ffmpeg
+        shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            export DEBIAN_FRONTEND=noninteractive
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends ffmpeg
+          fi
       - name: Wav to MP3
         run: |
           ffmpeg -i ${{ steps.output-dir.outputs.output_dir }}/output.wav -b:a 128k ${{ steps.output-dir.outputs.output_dir }}/output.mp3
