@@ -167,7 +167,7 @@ jobs:
             piper-voice-model-
       - name: Download voice model
         run: |
-          mkdir ${{ steps.models-dir.outputs.output_dir }}/${{ inputs.voice-model }}
+          mkdir -p ${{ steps.models-dir.outputs.output_dir }}/${{ inputs.voice-model }}
           uvx --from piper-tts python -m piper.download_voices --data-dir ${{ steps.models-dir.outputs.output_dir }}/${{ inputs.voice-model }} ${{ inputs.voice-model }}
       - name: Generate local audio
         working-directory: main
