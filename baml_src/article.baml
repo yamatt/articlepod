@@ -13,7 +13,7 @@ Do not provide follow up questions.
 
 Aim for 3-5 minutes when read aloud (450-750 words).
 
-Output ONLY the spoken script text with no stage directions, annotations or markdown formatting.
+Output ONLY the spoken script text with no "Here is the script" or similar, no stage directions, no annotations and no markdown formatting.
 
 ---
 Article Title: {{ title }}
