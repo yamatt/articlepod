@@ -13,7 +13,7 @@ updates:
         patterns: ["*"]
         update-types: ["minor", "patch"]
     labels:
-      - dependabot
+      - dependency
       - github-actions
   - package-ecosystem: "uv"
     directory: "/"
@@ -26,5 +26,5 @@ updates:
         patterns: ["*"]
         update-types: ["minor", "patch"]
     labels:
-      - dependabot
+      - dependency
       - python
